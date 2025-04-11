@@ -1,4 +1,3 @@
-
 import streamlit as st
 
 # This MUST be the first Streamlit command

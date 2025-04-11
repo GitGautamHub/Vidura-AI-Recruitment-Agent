@@ -6,6 +6,14 @@ import io
 import matplotlib.pyplot as plt
 import time
 import requests
+from dotenv import load_dotenv
+import os
+
+# Load .env file
+load_dotenv()
+
+api_key = os.getenv("MAGIC_API_KEY")
+
 
 def setup_page():
     """Apply custom CSS and setup page (without setting page config)"""
@@ -221,36 +229,68 @@ def apply_custom_css(accent_color="#d32f2f"):
 
 def setup_sidebar():
     with st.sidebar:
-        st.header("Configuration")
-        
-        st.subheader("API Keys")
-        openai_api_key = st.text_input("OpenAI API Key", type="password")
-        
+        st.markdown("## ⚙️ Settings")
+
+        # Static theme color (black)
+        theme_color = "#000000"
+        st.markdown(
+            f"""
+            <style>
+                .stButton button, .main-header, .stTabs [aria-selected="true"] {{
+                    background-color: {theme_color} !important;
+                    border-color: {theme_color} !important;
+                }}
+            </style>
+            """, unsafe_allow_html=True
+        )
+
         st.markdown("---")
 
-        theme_color = "#000000"
-        st.markdown(f"""
-        <style>
-        .stButton button, .main-header, .stTabs [aria-selected="true"] {{
-            background-color: {theme_color} !important;
-            border-color: {theme_color} !important;
-        }}
-        </style>
-        """, unsafe_allow_html=True)
-        
+        st.markdown("### 🧭 Navigation")
+        st.markdown(
+            """
+            - **Resume Analysis**
+            - **Resume Q&A**
+            - **Interview Questions**
+            - **Resume Improvement**
+            - **Generate Improved Resume**
+            - **AI Resume Extractor**
+            """,
+            unsafe_allow_html=True
+        )
+
         st.markdown("---")
-        
-        st.markdown("""
-        <div style="text-align: center; margin-top: 20px;">
-            <p>Vidura: AI Recruitment Agent</p>
-            <p style="font-size: 0.8rem; color: #666;">v1.0.0</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        return {
-            "openai_api_key": openai_api_key,
-            "theme_color": theme_color
-        }
+
+        st.markdown("### About Vidura")
+        st.markdown(
+            """
+            **Vidura** is your AI-powered Recruitment Assistant:
+             1. Analyze Resumes
+             2. Understand Skill Gaps
+             3. Generate Targeted Interview Questions
+             4. Improve & Rebuild CVs
+
+            Powered by GPT-4o and industry-grade parsing APIs.
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown("---")
+
+        st.markdown(
+            """
+            <div style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
+                <strong>Vidura v1.0.0</strong><br>
+                Made with ❤️ by Team KantaBai
+            </div>
+            """, unsafe_allow_html=True
+        )
+
+    return {
+        "openai_api_key": api_key,  # Internally managed now
+        "theme_color": theme_color
+    }
+
 
 def ai_resume_parser_tab():
     st.subheader("🧠 AI-Powered Resume Parser (SharpAPI)")
