@@ -31,7 +31,7 @@ def setup_page():
 def display_header():
 
     try:
-        with open("euron.jpg", "rb") as img_file:
+        with open("vidura_logo.png", "rb") as img_file:
             logo_base64 = base64.b64encode(img_file.read()).decode()
             logo_html = f'<img src="data:image/jpeg;base64,{logo_base64}" alt="Euron Logo" class="logo-image" style="max-height: 100px;">'
     except:
@@ -45,7 +45,7 @@ def display_header():
                 {logo_html}
             </div>
             <div class="title-container" style="text-align: center;">
-                <h1>Euron Recruitment Agent</h1>
+                <h1>Vidura: AI Recruitment Agent</h1>
                 <p>Smart Resume Analysis & Interview Preparation System</p>
             </div>
         </div>
