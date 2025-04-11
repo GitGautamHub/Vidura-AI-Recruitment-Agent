@@ -4,6 +4,8 @@ import pandas as pd
 import base64
 import io
 import matplotlib.pyplot as plt
+import time
+import requests
 
 def setup_page():
     """Apply custom CSS and setup page (without setting page config)"""
@@ -225,10 +227,8 @@ def setup_sidebar():
         openai_api_key = st.text_input("OpenAI API Key", type="password")
         
         st.markdown("---")
-        
-        
-        st.subheader("Theme")
-        theme_color = st.color_picker("Accent Color", "#d32f2f")
+
+        theme_color = "#000000"
         st.markdown(f"""
         <style>
         .stButton button, .main-header, .stTabs [aria-selected="true"] {{
@@ -242,7 +242,7 @@ def setup_sidebar():
         
         st.markdown("""
         <div style="text-align: center; margin-top: 20px;">
-            <p>🚀 Euron Recruitment Agent</p>
+            <p>Vidura: AI Recruitment Agent</p>
             <p style="font-size: 0.8rem; color: #666;">v1.0.0</p>
         </div>
         """, unsafe_allow_html=True)
@@ -252,6 +252,29 @@ def setup_sidebar():
             "theme_color": theme_color
         }
 
+def ai_resume_parser_tab():
+    st.subheader("🧠 AI-Powered Resume Parser (SharpAPI)")
+    uploaded_file = st.file_uploader("Upload your resume (PDF, DOCX, etc.)", type=["pdf", "doc", "docx", "txt"])
+
+    if uploaded_file:
+        api_key = st.secrets["magicapi_key"]  # You can set this in .streamlit/secrets.toml
+        with st.spinner("Parsing resume..."):
+            response = requests.post(
+                url="https://api.magicapi.dev/api/v1/sharpapi.com/resume/api/v1/hr/parse_resume",
+                headers={
+                    "accept": "application/json",
+                    "x-magicapi-key": api_key
+                },
+                files={"file": (uploaded_file.name, uploaded_file, "application/pdf")},
+                data={"language": "English"}
+            )
+
+        if response.status_code == 200:
+            parsed_data = response.json()["data"]["attributes"]["result"]
+            st.success("✅ Resume Parsed Successfully!")
+            st.json(parsed_data)
+        else:
+            st.error(f"❌ Error: {response.text}")
 
 
 def role_selection_section(role_requirements):
@@ -489,7 +512,108 @@ Status: {"✅ Shortlisted" if selected else "❌ Not Selected"}
     st.markdown('</div>', unsafe_allow_html=True)
 
 
+import streamlit as st
+import requests
+import time
 
+import streamlit as st
+import requests
+import time
+
+def ai_resume_parser_tab():
+    st.markdown("## 🧠 AI-Powered Resume Parser (SharpAPI)")
+    st.markdown("Upload your resume and let AI extract your professional journey in seconds.")
+
+    uploaded_file = st.file_uploader(
+        "📄 Upload your resume (PDF, DOC, DOCX, TXT)", 
+        type=["pdf", "doc", "docx", "txt"]
+    )
+
+    if uploaded_file:
+        api_key = "cm9csy3v50002l504kwgdbi28"  # Replace this if needed
+
+        with st.spinner("📤 Uploading and parsing resume..."):
+            try:
+                # Step 1: Send resume to API
+                response = requests.post(
+                    url="https://api.magicapi.dev/api/v1/sharpapi.com/resume/api/v1/hr/parse_resume",
+                    headers={
+                        "accept": "application/json",
+                        "x-magicapi-key": api_key
+                    },
+                    files={"file": (uploaded_file.name, uploaded_file, uploaded_file.type)},
+                    data={"language": "English"}
+                )
+
+                if response.status_code in [200, 202]:
+                    data = response.json()
+                    job_id = data.get("job_id")
+                    status_url = data.get("status_url")
+
+                    st.info(f"⏳ Parsing started... **Job ID:** `{job_id}`")
+
+                    # Fallback URL fix
+                    if not status_url or "api.market" in status_url:
+                        status_url = f"https://api.magicapi.dev/api/v1/sharpapi.com/resume/api/v1/hr/parse_resume/job/status/{job_id}"
+                        st.warning("⚠️ Status URL fallback applied.")
+
+                    # Step 2: Poll result
+                    for attempt in range(10):
+                        time.sleep(2)
+                        poll = requests.get(status_url, headers={"x-magicapi-key": api_key})
+
+                        if poll.status_code == 200:
+                            parsed = poll.json()
+                            status = parsed["data"]["attributes"]["status"]
+
+                            if status == "success":
+                                result = parsed["data"]["attributes"]["result"]
+                                st.success("✅ Resume Parsed Successfully!")
+
+                                # Pretty print
+                                st.markdown("### 👤 Candidate Details")
+                                st.write(f"**Name:** {result.get('candidate_name', '-')}")
+                                st.write(f"**Email:** {result.get('candidate_email', '-')}")
+                                st.write(f"**Phone:** {result.get('candidate_phone', '-')}")
+                                st.write(f"**Address:** {result.get('candidate_address', '-')}")
+
+                                st.markdown("### 🎓 Education")
+                                education = result.get("education_qualifications", [])
+                                if education:
+                                    for edu in education:
+                                        st.write(f"- {edu['degree_type']} from **{edu['school_name']}**")
+                                        st.caption(f"{edu['start_date']} to {edu['end_date']} | {edu['faculty_department']}")
+                                else:
+                                    st.warning("No education info found.")
+
+                                st.markdown("### 💼 Work Experience")
+                                jobs = result.get("positions", [])
+                                if jobs:
+                                    for job in jobs:
+                                        st.write(f"**{job['position_name']}** at {job['company_name']}")
+                                        st.caption(f"{job['start_date']} to {job.get('end_date', 'Present')}")
+                                        st.markdown(f"*{job['job_details']}*")
+                                else:
+                                    st.warning("No job positions found.")
+
+                                return
+                        elif poll.status_code == 404:
+                            st.warning(f"⚠️ Attempt {attempt + 1}/10: Status 404 - Not ready yet")
+                        elif poll.status_code == 401:
+                            st.error("❌ Invalid API Key (401)")
+                            return
+                        elif poll.status_code == 402:
+                            st.error("❌ Payment Required / Monthly quota exceeded (402)")
+                            return
+                        else:
+                            st.warning(f"⏳ Attempt {attempt + 1}/10: Still waiting...")
+
+                    st.error("❌ Parsing took too long. Please try again later.")
+                else:
+                    st.error(f"❌ Upload failed. API Response: `{response.status_code}` {response.text}")
+
+            except Exception as e:
+                st.error(f"🚨 Unexpected Error: {str(e)}")
 
 
 def resume_qa_section(has_resume, ask_question_func=None):
@@ -713,5 +837,6 @@ def create_tabs():
         "Resume Q&A", 
         "Interview Questions", 
         "Resume Improvement", 
-        "Improved Resume"
+        "Improved Resume",
+        "AI Resume Extractor"
     ])
