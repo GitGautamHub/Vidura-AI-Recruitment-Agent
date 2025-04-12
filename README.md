@@ -4,7 +4,7 @@ Vidura is an intelligent recruitment assistant designed to automate and enhance 
 
 ---
 
-![Vidura Logo](https://raw.githubusercontent.com/GitGautamHub/Vidura-AI-Recruitment-Agent/vidura_logo.png)
+![Vidura](vidura.png)
 
 
 ## Features
